@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>糖豆炸弹人 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body data-screen="loading">
+  <canvas id="gl"></canvas>
+
+  <!-- 加载 -->
+  <div id="loading" class="screen">
+    <div class="loader"><span></span><span></span><span></span></div>
+    <p>糖果正在烘焙中…</p>
+  </div>
+
+  <!-- 主菜单 -->
+  <div id="menu" class="screen">
+    <div class="panel menu-panel">
+      <h1 class="logo"><span>糖</span><span>豆</span><span>炸</span><span>弹</span><span>人</span></h1>
+      <p class="tagline">放泡泡 · 困住对手 · 戳破泡泡！</p>
+
+      <div class="opt">
+        <label>模式</label>
+        <div class="seg" data-opt="mode">
+          <button data-v="ffa" class="on">个人混战</button>
+          <button data-v="team">2v2 团队</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>玩家</label>
+        <div class="seg" data-opt="humans">
+          <button data-v="1" class="on">单人</button>
+          <button data-v="2">双人同屏</button>
+        </div>
+      </div>
+      <div class="opt" id="opt-ai">
+        <label>电脑</label>
+        <div class="seg" data-opt="ai">
+          <button data-v="1">1 个</button>
+          <button data-v="2">2 个</button>
+          <button data-v="3" class="on">3 个</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>难度</label>
+        <div class="seg" data-opt="difficulty">
+          <button data-v="easy">简单</button>
+          <button data-v="normal" class="on">普通</button>
+          <button data-v="hard">困难</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>地图</label>
+        <div class="seg" data-opt="map">
+          <button data-v="0" class="on">糖果小镇</button>
+          <button data-v="1">饼干花园</button>
+          <button data-v="2">冰淇淋广场</button>
+          <button data-v="-1">轮换</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>赛制</label>
+        <div class="seg" data-opt="wins">
+          <button data-v="2" class="on">三局两胜</button>
+          <button data-v="3">五局三胜</button>
+        </div>
+      </div>
+
+      <div class="chars">
+        <div class="char-row" data-player="0">
+          <span class="who p1">1P</span>
+          <div class="char-list"></div>
+        </div>
+        <div class="char-row" data-player="1">
+          <span class="who p2">2P</span>
+          <div class="char-list"></div>
+        </div>
+      </div>
+
+      <div class="menu-actions">
+        <button id="btn-start" class="big-btn">开始游戏</button>
+        <button id="btn-help" class="ghost-btn">玩法说明</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 玩法说明 -->
+  <div id="help" class="overlay">
+    <div class="panel help-panel">
+      <h2>玩法说明</h2>
+      <div class="help-grid">
+        <div>
+          <h3>🎮 操作</h3>
+          <table>
+            <tr><th></th><th>1P</th><th>2P</th></tr>
+            <tr><td>移动</td><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></td></tr>
+            <tr><td>放泡泡</td><td><kbd>空格</kbd></td><td><kbd>Enter</kbd></td></tr>
+            <tr><td>救命针</td><td><kbd>E</kbd></td><td><kbd>右Shift</kbd></td></tr>
+          </table>
+          <p class="note">单人模式下方向键 / Enter 也能操作 1P；支持手柄（A 放泡泡，B 用针）。<kbd>Esc</kbd> 暂停。</p>
+          <h3>🫧 规则</h3>
+          <ul>
+            <li>泡泡会向十字方向喷出水柱，打碎糖果方块，掉出道具。</li>
+            <li>被水柱击中会被<b>困在泡泡里</b>，几秒后泡泡破裂即出局。</li>
+            <li>对手碰到被困的你会直接<b>戳破泡泡</b>；队友碰到则会<b>救出</b>你。</li>
+            <li>持有<b>救命针</b>时按道具键可以自己脱困。</li>
+            <li>时间耗尽进入<b>加时赛</b>：糖块从天而降，场地不断缩小！</li>
+            <li>泡泡之间会连锁爆炸，利用它包围对手吧。</li>
+          </ul>
+        </div>
+        <div>
+          <h3>🎁 道具</h3>
+          <div id="legend"></div>
+        </div>
+      </div>
+      <button class="big-btn" data-close>知道啦</button>
+    </div>
+  </div>
+
+  <!-- 游戏 HUD -->
+  <div id="hud" class="screen">
+    <div class="hud-top">
+      <div id="cards-left" class="cards"></div>
+      <div id="timer">2:00</div>
+      <div id="cards-right" class="cards"></div>
+    </div>
+    <div id="center"></div>
+  </div>
+  <div id="tags"></div>
+  <div id="popups"></div>
+
+  <!-- 暂停 -->
+  <div id="pause" class="overlay">
+    <div class="panel small-panel">
+      <h2>暂停中</h2>
+      <button class="big-btn" id="btn-resume">继续游戏</button>
+      <button class="ghost-btn" id="btn-restart">重新开始</button>
+      <button class="ghost-btn" id="btn-quit">返回菜单</button>
+    </div>
+  </div>
+
+  <!-- 结算 -->
+  <div id="result" class="screen">
+    <div class="panel result-panel">
+      <div class="confetti-top">🎉</div>
+      <h2 id="result-title">获胜!</h2>
+      <div id="result-list"></div>
+      <div class="menu-actions">
+        <button class="big-btn" id="btn-again">再来一局</button>
+        <button class="ghost-btn" id="btn-menu">返回菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toolbar">
+    <button id="btn-music" title="音乐">🎵</button>
+    <button id="btn-sfx" title="音效">🔊</button>
+    <button id="btn-pause" title="暂停 (Esc)">⏸</button>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
